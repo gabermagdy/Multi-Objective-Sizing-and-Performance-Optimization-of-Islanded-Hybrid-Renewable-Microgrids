@@ -1,13 +1,10 @@
-function o=obj_function5(x)
-%clear all
-%close all
-%clc
-o = [0,0];
+clear all
+close all
+clc
 houses=15;   % number of houses
-p_npv=x(1); % pv output kw
-ad=x(2);    % dayes of autonomy
-nwt=x(3);   % number of wind trbine
-%NRO=ceil(x(4));
+p_npv=45;%x(1); % pv output kw
+ad=5;%x(2);    % dayes of autonomy
+nwt=10;%x(3);   % number of wind trbine
 %nPng=x(4);%ceil(x(4));  % number of deisel generator
 %% 1)load inputs   (meteorological data)
 wind_speed=load('berenicewindspeed.txt'); %hourly wind speed (m/s)
@@ -30,7 +27,8 @@ clear g
 s_dc=4;  %kwh/m^3
 H_wds=[0.1 0.1 0.1 0.1 0.1 0.1 0.7 0.7 0.7 0.4 0.4 0.5 0.7 0.7 0.7 0.4 0.4 0.4 0.7 0.7 0.7 0.4 0.1 0.1 ];
 H_wdw=[0.1 0.1 0.1 0.1 0.1 0.1 0.2 0.68 0.68 0.68 0.4 0.4 0.4 0.68 0.68 0.68 0.4 0.4 0.4 0.68 0.68 0.68 0.4 0.14 ];
-p_dem=H_wds*s_dc; % hourly energy demand kw
+
+p_dem=H_wdw*s_dc; % hourly energy demand kw
 %% battery
 %#######inputs##############inputs####################inputs##
 load1=[1.5 1 0.5 0.5 1 2 2 2.5 2.5 3 3 5 4.4 4 3.43 3 1.91 2.48 3 3 3.42 3.44 2.51 2];
@@ -39,13 +37,18 @@ load1=load1/5; load1=load1*2;% maximum would be 2kW mean is 1kW
 %load1=[1 1 1 1 1.5 2 2.5 2.5 1.5 1.5 1.5 2 2 2.5 2.5 3 3.5 4 4 3.5 2.5 1.5 1 1];
 %houses=1;%number of houses in a village
 load2=houses.*load1;%total load in a day for the whole village
-load2=load2+p_dem;
 %hourly load data for one year
-a=0;
+a1=0;
 for i=1:1:360
-     a=[a,load2];   
+     a1=[a1,load2];   
 end
-a(1)=[];
+a1(1)=[];
+a2=0;
+for i=1:1:360
+     a2=[a2,p_dem];   
+end
+a2(1)=[];
+a=a1+a2;
 Pl1=a;
 uinv=0.92; %inverter efficincy
 ub=0.85;   % battery efficiency
@@ -143,13 +146,13 @@ end
 end
 %% plotting
 
-% figure
+figure(1)
 a=contribution';
 b=sum(a);
 %g=1-b(4)/(b(1)+b(2));%renewable_factor(>=0.01)
-% h=pie(b);
-% colormap jet;
-% legend('PV','WIND','BATTERY','DIESEL');
+ h=pie(b);
+ colormap jet;
+ legend('PV','WIND','BATTERY');
 
 %reliability
 %lose of load probability=sum(load-pv-wind+battery)/sum(load)
@@ -161,19 +164,12 @@ for t=2:1:8640
     end
     
 end
-o(1)=total_loss/(sum(Pl));
+LPSP=total_loss/(sum(Pl))
 % reliability=sum(aa)/sum(Pl);
 % [price_electricity] = economic(diesel,Pl,Fg,cwh);
-o(2)=economic_fast(Pl,cwh,p_npv,nwt);
+COE=economic_fast(Pl,cwh,p_npv,nwt)
   %ali=[Pp(1:168),Pw(1:168)',Eb(1:168)',diesel(1:168)',Pl(1:168)',Edump(1:168)'];
  %Edump=sum(Edump);
- bar(Pp(1:720),'r'),hold on
-bar(Pw(1:720)),hold on 
-%figure(3)
-plot(Eb(1:720),'g'),hold on
-plot(Pl(1:720),'k'),hold on
-plot(Edump(1:720),'y')
-%plot(P_des(1:168),'y')
 %o(3)=b(4)/(b(1)+b(2));
  % Penalty constant
 %lam=10^15;
@@ -184,4 +180,8 @@ plot(Edump(1:720),'y')
 % end
 % z=lam*g^2*H;
 % o=o+z;
-end
+figure(2)
+subplot(2,2,1),plot(Pp(1:720)),xlabel('hour'),ylabel('pv_output (kw)')
+subplot(2,2,2),plot(Pw(1:720)),xlabel('hour'),ylabel('wind_output (kw)')
+subplot(2,2,3),plot(Eb(1:720)),xlabel('hour'),ylabel('battery (kw)')
+subplot(2,2,4),plot(a2(1:720)),xlabel('hour'),ylabel('Desalination power (kw)')
