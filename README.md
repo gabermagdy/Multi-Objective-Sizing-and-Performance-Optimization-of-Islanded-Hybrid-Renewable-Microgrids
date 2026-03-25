@@ -44,12 +44,7 @@ The system is evaluated under three residential scenarios:
 - 10 houses (medium load)
 - 15 houses (heavy load)
 
-
-How to run:
-1. Open MATLAB
-2. Run main.m
-
-
----
-
-## 📂 Repository Structure
+How to Run
+1. Open the main script (`main.m`)  
+2. Select the load scenario (5, 10, or 15 houses)  
+3. Run the simulation  
